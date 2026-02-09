@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CleanSpot | Report Waste</title>
+  <style>
+    :root {
+      --green: #2E7D32;
+      --light-green: #A5D6A7;
+      --white: #ffffff;
+      --gray: #f4f6f5;
+    }
+
+    * {
+      box-sizing: border-box;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    body {
+      margin: 0;
+      background: var(--gray);
+      color: #333;
+    }
+
+    /* Navbar */
+    nav {
+      background: var(--white);
+      padding: 15px 30px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    }
+
+    nav h1 {
+      color: var(--green);
+      margin: 0;
+    }
+
+    nav a {
+      text-decoration: none;
+      margin-left: 20px;
+      color: var(--green);
+      font-weight: 600;
+    }
+
+    /* Hero */
+    .hero {
+      background: linear-gradient(120deg, var(--green), #4CAF50);
+      color: white;
+      padding: 80px 20px;
+      text-align: center;
+    }
+
+    .hero h2 {
+      font-size: 2.5rem;
+      margin-bottom: 10px;
+    }
+
+    .hero p {
+      font-size: 1.2rem;
+      margin-bottom: 30px;
+    }
+
+    .btn {
+      background: white;
+      color: var(--green);
+      padding: 15px 30px;
+      border-radius: 30px;
+      border: none;
+      font-size: 1rem;
+      font-weight: bold;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+
+    .btn:hover {
+      background: var(--light-green);
+    }
+
+    /* Section */
+    .container {
+      max-width: 900px;
+      margin: 40px auto;
+      background: var(--white);
+      padding: 30px;
+      border-radius: 15px;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    }
+
+    .container h3 {
+      color: var(--green);
+      margin-bottom: 20px;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 5px;
+      font-weight: 600;
+    }
+
+    input, select {
+      width: 100%;
+      padding: 12px;
+      margin-bottom: 20px;
+      border-radius: 10px;
+      border: 1px solid #ccc;
+    }
+
+    #location {
+      background: #f0f0f0;
+    }
+
+    footer {
+      text-align: center;
+      padding: 20px;
+      background: var(--green);
+      color: white;
+      margin-top: 50px;
+    }
+
+    .success {
+      text-align: center;
+      color: var(--green);
+      font-weight: bold;
+      display: none;
+    }
+  </style>
+</head>
+<body>
+
+  <nav>
+    <h1>🌱 CleanSpot</h1>
+    <div>
+      <a href="#">Home</a>
+      <a href="#report">Report</a>
+      <a href="#">Map</a>
+    </div>
+  </nav>
+
+  <section class="hero">
+    <h2>See Waste? Report It.</h2>
+    <p>Help keep our city clean with one click</p>
+    <button class="btn" onclick="document.getElementById('report').scrollIntoView()">Report Waste</button>
+  </section>
+
+  <section class="container" id="report">
+    <h3>📸 Report Waste</h3>
+
+    <label>Upload Waste Photo</label>
+    <input type="file" accept="image/*" capture="environment" />
+
+    <label>Waste Type</label>
+    <select>
+      <option>Plastic</option>
+      <option>Organic</option>
+      <option>Mixed Waste</option>
+      <option>Construction Waste</option>
+    </select>
+
+    <label>Location (Auto-detected)</label>
+    <input type="text" id="location" readonly placeholder="Fetching location..." />
+
+    <button class="btn" onclick="submitReport()">Submit Report</button>
+    <p class="success" id="successMsg">✅ Report submitted successfully!</p>
+  </section>
+
+    <!-- Rewards Section -->
+  <section class="container" id="rewards">
+    <h3>🏆 Monthly Rewards & Points</h3>
+
+    <p><strong>How it works:</strong></p>
+    <ul>
+      <li>✔ You earn <strong>10 points</strong> for every <strong>valid & first-time report</strong>.</li>
+      <li>✔ Only the <strong>first report</strong> for a location gets points.</li>
+      <li>✔ Fake or repeated uploads are <strong>automatically rejected by AI</strong>.</li>
+      <li>✔ Monthly rewards are based on total valid reports.</li>
+    </ul>
+
+    <div style="margin-top:20px; padding:20px; background:#f4f6f5; border-radius:12px;">
+      <p><strong>This Month's Stats</strong></p>
+      <p>Reports Submitted: <span id="reportCount">0</span></p>
+      <p>Total Points: <span id="points">0</span></p>
+      <p>Reward Status: <span id="reward">Not Eligible</span></p>
+    </div>
+  </section>
+
+  <footer>
+    © 2026 CleanSpot | A Citizen-Powered Clean City Initiative
+  </footer>
+
+  <script>
+    // Get user location
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(pos => {
+        document.getElementById('location').value = 
+          `Lat: ${pos.coords.latitude.toFixed(4)}, Lng: ${pos.coords.longitude.toFixed(4)}`;
+      }, () => {
+        document.getElementById('location').value = "Location access denied";
+      });
+    }
+
+    function submitReport() {
+      document.getElementById('successMsg').style.display = 'block';
+    }
+  </script>
+<script>
+  let reports = JSON.parse(localStorage.getItem("reports")) || [];
+  let points = parseInt(localStorage.getItem("points")) || 0;
+
+  function submitReport() {
+    const fileInput = document.querySelector('input[type="file"]');
+    if (!fileInput.files.length) {
+      alert("Please upload a waste image");
+      return;
+    }
+
+    const location = document.getElementById("location").value;
+    const imageName = fileInput.files[0].name;
+
+    // 🔍 Fake detection simulation
+    const isFake = imageName.includes("test") || imageName.includes("fake");
+    if (isFake) {
+      alert("❌ Fake report detected by AI");
+      return;
+    }
+
+    // 📍 Prevent duplicate reporting
+    const alreadyReported = reports.find(r => r.location === location);
+    if (alreadyReported) {
+      alert("⚠️ Location already reported. No points awarded.");
+      return;
+    }
+
+    // ✅ Valid report
+    reports.push({ location, imageName });
+    points += 10;
+
+    localStorage.setItem("reports", JSON.stringify(reports));
+    localStorage.setItem("points", points);
+
+    updateRewardsUI();
+    document.getElementById("successMsg").style.display = "block";
+  }
+
+  function updateRewardsUI() {
+    document.getElementById("reportCount").innerText = reports.length;
+    document.getElementById("points").innerText = points;
+
+    document.getElementById("reward").innerText =
+      points >= 50 ? "🎉 Eligible for Reward" : "Not Eligible";
+  }
+
+  updateRewardsUI();
+</script>
+
+
+</body>
+</html>
